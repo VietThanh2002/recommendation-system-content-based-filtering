@@ -4,6 +4,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from flask import Flask, request, jsonify
 from bs4 import BeautifulSoup
+import re
+from sklearn.preprocessing import normalize
 
 # Kết nối đến cơ sở dữ liệu
 db_connection = dbConnect()
@@ -16,50 +18,76 @@ else:
 
 # Truy vấn để lấy dữ liệu từ bảng products
 query = """
-    SELECT p.id, p.name as product_name, p.des, b.name as brand_name, c.name as category_name
+    SELECT p.id, p.name, p.des, b.name as brand_name, c.name as category_name, sc.name as sub_category_name
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN sub_categories sc ON p.sub_category_id = sc.id
 """
 df_products = pd.read_sql(query, db_connection.connection)
 
 # Đóng kết nối
 db_connection.close_connection()
 
-# Hàm để làm sạch HTML
-def clean_html(raw_html):
-    soup = BeautifulSoup(raw_html, "html.parser")
-    clean_text = soup.get_text()
+# Hàm để làm sạch HTML và văn bản
+def clean_text(raw_html):
+    # Loại bỏ HTML
+    clean_text = BeautifulSoup(raw_html, "html.parser").get_text()
+    # Chuyển về chữ thường
+    clean_text = clean_text.lower()
+    # Loại bỏ các ký tự đặc biệt và số
+    clean_text = re.sub(r'[^\w\s]', '', clean_text)
+    # Loại bỏ khoảng trắng thừa
+    clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+    
     return clean_text
 
-# Áp dụng hàm làm sạch cho cột 'des'
-df_products['clean_des'] = df_products['des'].apply(clean_html)
+# Áp dụng hàm làm sạch cho các cột cần thiết
+columns_to_clean = ['product_name', 'des', 'category_name', 'sub_category_name', 'brand_name']
+
+for col in columns_to_clean:
+    df_products[col] = df_products[col].apply(clean_text)
+
+# Xử lý các giá trị null hoặc NaN
+df_products = df_products.fillna('')
+
+# Loại bỏ các sản phẩm trùng lặp (nếu có)
+df_products = df_products.drop_duplicates(subset='id')
 
 # Gợi ý dựa trên nội dung
 def content_based_recommendations(product_id, num_recommendations=3):
-    tf = TfidfVectorizer(stop_words='english', max_df=0.8, min_df=5, ngram_range=(1, 2))
+    tf = TfidfVectorizer(
+        stop_words='english', 
+        max_df=0.8,
+        min_df=2,
+        ngram_range=(1, 2),
+        token_pattern=r'\b\w+\b'
+    )
+    
     df_products['content'] = (
         df_products['product_name'] + ' ' + 
-        df_products['clean_des'] + ' ' + 
-        df_products['category_name'].astype(str) + ' ' + 
-        df_products['brand_name'].astype(str)
+        df_products['des'] + ' ' + 
+        df_products['category_name'] + ' ' + 
+        df_products['brand_name']
     )
+    
     tf_matrix = tf.fit_transform(df_products['content'])
     cosine_sim = cosine_similarity(tf_matrix, tf_matrix)
-    # print(cosine_sim)
+    cosine_sim = normalize(cosine_sim)
     
     idx = df_products.index[df_products['id'] == product_id][0]
     sim_scores = list(enumerate(cosine_sim[idx]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-    print(sim_scores)
     sim_scores = sim_scores[1:num_recommendations+1]
     
     product_indices = [i[0] for i in sim_scores]
     return df_products.iloc[product_indices]
 
-# print("Content-based Recommendations:")
-# print(content_based_recommendations(30))
-# Endpoint API để lấy gợi ý sản phẩm
+print("Content-based Recommendations:")
+print(content_based_recommendations(30))
+
+#Endpoint API để lấy gợi ý sản phẩm
+
 app = Flask(__name__)
 
 @app.route('/recommendations', methods=['GET'])
