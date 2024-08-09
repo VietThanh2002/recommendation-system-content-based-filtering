@@ -18,7 +18,7 @@ else:
 
 # Truy vấn để lấy dữ liệu từ bảng products
 query = """
-    SELECT p.id, p.name, p.des, b.name as brand_name, c.name as category_name, sc.name as sub_category_name
+    SELECT p.id, p.name as product_name, p.des, b.name as brand_name, c.name as category_name, sc.name as sub_category_name
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN categories c ON p.category_id = c.id
@@ -31,8 +31,10 @@ db_connection.close_connection()
 
 # Hàm để làm sạch HTML và văn bản
 def clean_text(raw_html):
+    if raw_html is None:
+        return ""
     # Loại bỏ HTML
-    clean_text = BeautifulSoup(raw_html, "html.parser").get_text()
+    clean_text = BeautifulSoup(str(raw_html), "html.parser").get_text()
     # Chuyển về chữ thường
     clean_text = clean_text.lower()
     # Loại bỏ các ký tự đặc biệt và số
@@ -42,14 +44,14 @@ def clean_text(raw_html):
     
     return clean_text
 
+# Xử lý các giá trị null hoặc NaN
+df_products = df_products.fillna('')
+
 # Áp dụng hàm làm sạch cho các cột cần thiết
 columns_to_clean = ['product_name', 'des', 'category_name', 'sub_category_name', 'brand_name']
 
 for col in columns_to_clean:
-    df_products[col] = df_products[col].apply(clean_text)
-
-# Xử lý các giá trị null hoặc NaN
-df_products = df_products.fillna('')
+    df_products[col] = df_products[col].astype(str).apply(clean_text)
 
 # Loại bỏ các sản phẩm trùng lặp (nếu có)
 df_products = df_products.drop_duplicates(subset='id')
@@ -81,13 +83,13 @@ def content_based_recommendations(product_id, num_recommendations=3):
     sim_scores = sim_scores[1:num_recommendations+1]
     
     product_indices = [i[0] for i in sim_scores]
+    
     return df_products.iloc[product_indices]
 
-print("Content-based Recommendations:")
-print(content_based_recommendations(30))
+# print("Content-based Recommendations:")
+# print(content_based_recommendations(30))
 
-#Endpoint API để lấy gợi ý sản phẩm
-
+# Endpoint API để lấy gợi ý sản phẩm
 app = Flask(__name__)
 
 @app.route('/recommendations', methods=['GET'])

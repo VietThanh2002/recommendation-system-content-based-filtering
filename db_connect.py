@@ -5,7 +5,7 @@ class dbConnect:
     def __init__(self):
         self.connection = mysql.connector.connect(
             host='localhost',
-            database='ct466',
+            database='ct550',
             user='root',
             password=''
         )
