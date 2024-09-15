@@ -56,8 +56,10 @@ for col in columns_to_clean:
 # Loại bỏ các sản phẩm trùng lặp (nếu có)
 df_products = df_products.drop_duplicates(subset='id')
 
+# print(df_products.head())
+
 # Gợi ý dựa trên nội dung
-def content_based_recommendations(product_id, num_recommendations=3):
+def content_based_recommendations(product_id, num_recommendations=5):
     tf = TfidfVectorizer(
         stop_words='english', 
         max_df=0.8,
@@ -71,34 +73,43 @@ def content_based_recommendations(product_id, num_recommendations=3):
         df_products['des'] + ' ' + 
         df_products['category_name'] + ' ' + 
         df_products['brand_name']
-    )
+    )    
+    # print(df_products['content'])
     
     tf_matrix = tf.fit_transform(df_products['content'])
     cosine_sim = cosine_similarity(tf_matrix, tf_matrix)
-    cosine_sim = normalize(cosine_sim)
+    # cosine_sim = normalize(cosine_sim)
+#    idx = product_id
+#     print(idx)
+#     sim_scores = list(enumerate(cosine_sim[product_id]))
+    idx = df_products[df_products['id'] == product_id].index[0]
+    # print(idx)
+    # print(df_products[df_products['id'] == 30])
     
-    idx = df_products.index[df_products['id'] == product_id][0]
     sim_scores = list(enumerate(cosine_sim[idx]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    print(sim_scores)
     sim_scores = sim_scores[1:num_recommendations+1]
     
     product_indices = [i[0] for i in sim_scores]
     
+    print(product_indices)
+    
     return df_products.iloc[product_indices]
 
-# print("Content-based Recommendations:")
-# print(content_based_recommendations(30))
+print("Content-based Recommendations:")
+print(content_based_recommendations(30))
 
 # Endpoint API để lấy gợi ý sản phẩm
-app = Flask(__name__)
+# app = Flask(__name__)
 
-@app.route('/recommendations', methods=['GET'])
-def recommendations():
-    product_id = int(request.args.get('product_id'))
-    recommended_products = content_based_recommendations(product_id)
-    recommended_product_ids = recommended_products['id'].tolist()
-    data = {'recommended_product_ids': recommended_product_ids}
-    return jsonify(data)
+# @app.route('/recommendations', methods=['GET'])
+# def recommendations():
+#     product_id = int(request.args.get('product_id'))
+#     recommended_products = content_based_recommendations(product_id)
+#     recommended_product_ids = recommended_products['id'].tolist()
+#     data = {'recommended_product_ids': recommended_product_ids}
+#     return jsonify(data)
 
-if __name__ == '__main__':
-    app.run(port=9090)
+# if __name__ == '__main__':
+#     app.run(port=9090)
