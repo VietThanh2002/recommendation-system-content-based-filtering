@@ -97,8 +97,8 @@ def content_based_recommendations(product_id, num_recommendations=5):
     
     return df_products.iloc[product_indices]
 
-print("Content-based Recommendations:")
-print(content_based_recommendations(30))
+# print("Content-based Recommendations:")
+# print(content_based_recommendations(30))
 
 # Endpoint API để lấy gợi ý sản phẩm
 # app = Flask(__name__)
