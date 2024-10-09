@@ -18,7 +18,7 @@ else:
 
 # Truy vấn để lấy dữ liệu từ bảng products
 query = """
-    SELECT p.id, p.name as product_name, p.des, b.name as brand_name, c.name as category_name, sc.name as sub_category_name
+    SELECT p.id, p.name as product_name, p.des, p.short_des, b.name as brand_name, c.name as category_name, sc.name as sub_category_name
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN categories c ON p.category_id = c.id
@@ -61,7 +61,7 @@ df_products = df_products.drop_duplicates(subset='id')
 # Gợi ý dựa trên nội dung
 def content_based_recommendations(product_id, num_recommendations=5):
     tf = TfidfVectorizer(
-        stop_words='english', 
+        stop_words=None, 
         max_df=0.8,
         min_df=2,
         ngram_range=(1, 2),
@@ -74,10 +74,13 @@ def content_based_recommendations(product_id, num_recommendations=5):
         df_products['category_name'] + ' ' + 
         df_products['brand_name']
     )    
-    # print(df_products['content'])
+    pd.set_option('display.max_columns', None)
+    print(df_products['content'].head())
     
     tf_matrix = tf.fit_transform(df_products['content'])
+    # print(tf_matrix)
     cosine_sim = cosine_similarity(tf_matrix, tf_matrix)
+    # print(cosine_sim)
     # cosine_sim = normalize(cosine_sim)
 #    idx = product_id
 #     print(idx)
@@ -88,17 +91,17 @@ def content_based_recommendations(product_id, num_recommendations=5):
     
     sim_scores = list(enumerate(cosine_sim[idx]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-    print(sim_scores)
+    # print(sim_scores)
     sim_scores = sim_scores[1:num_recommendations+1]
     
     product_indices = [i[0] for i in sim_scores]
     
-    print(product_indices)
+    # print(product_indices)
     
     return df_products.iloc[product_indices]
 
-# print("Content-based Recommendations:")
-# print(content_based_recommendations(30))
+print("Content-based Recommendations:")
+print(content_based_recommendations(30))
 
 # Endpoint API để lấy gợi ý sản phẩm
 # app = Flask(__name__)
