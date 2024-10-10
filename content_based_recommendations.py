@@ -18,7 +18,7 @@ else:
 
 # Truy vấn để lấy dữ liệu từ bảng products
 query = """
-    SELECT p.id, p.name as product_name, p.des, p.short_des, b.name as brand_name, c.name as category_name, sc.name as sub_category_name
+    SELECT p.id, p.name as product_name, p.des, p.short_des as short_des, b.name as brand_name, c.name as category_name, sc.name as sub_category_name
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN categories c ON p.category_id = c.id
@@ -26,6 +26,7 @@ query = """
 """
 df_products = pd.read_sql(query, db_connection.connection)
 
+# print(df_products)
 # Đóng kết nối
 db_connection.close_connection()
 
@@ -43,12 +44,11 @@ def clean_text(raw_html):
     clean_text = re.sub(r'\s+', ' ', clean_text).strip()
     
     return clean_text
-
 # Xử lý các giá trị null hoặc NaN
 df_products = df_products.fillna('')
 
 # Áp dụng hàm làm sạch cho các cột cần thiết
-columns_to_clean = ['product_name', 'des', 'category_name', 'sub_category_name', 'brand_name']
+columns_to_clean = ['product_name', 'des', 'short_des', 'category_name', 'sub_category_name', 'brand_name']
 
 for col in columns_to_clean:
     df_products[col] = df_products[col].astype(str).apply(clean_text)
@@ -56,7 +56,8 @@ for col in columns_to_clean:
 # Loại bỏ các sản phẩm trùng lặp (nếu có)
 df_products = df_products.drop_duplicates(subset='id')
 
-# print(df_products.head())
+pd.set_option('display.max_columns', None)
+print(df_products)
 
 # Gợi ý dựa trên nội dung
 def content_based_recommendations(product_id, num_recommendations=5):
@@ -70,12 +71,14 @@ def content_based_recommendations(product_id, num_recommendations=5):
     
     df_products['content'] = (
         df_products['product_name'] + ' ' + 
+        df_products['short_des'] + ' ' +
         df_products['des'] + ' ' + 
-        df_products['category_name'] + ' ' + 
+        df_products['category_name'] + ' ' +
+        df_products['sub_category_name'] + ' ' + 
         df_products['brand_name']
     )    
-    pd.set_option('display.max_columns', None)
-    print(df_products['content'].head())
+    # pd.set_option('display.max_columns', None)
+    # print(df_products['content'].head())
     
     tf_matrix = tf.fit_transform(df_products['content'])
     # print(tf_matrix)
@@ -100,8 +103,8 @@ def content_based_recommendations(product_id, num_recommendations=5):
     
     return df_products.iloc[product_indices]
 
-print("Content-based Recommendations:")
-print(content_based_recommendations(30))
+# print("Content-based Recommendations:")
+# print(content_based_recommendations(30))
 
 # Endpoint API để lấy gợi ý sản phẩm
 # app = Flask(__name__)
