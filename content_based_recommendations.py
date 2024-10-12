@@ -7,6 +7,12 @@ from bs4 import BeautifulSoup
 import re
 from sklearn.preprocessing import normalize
 
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+
+# Vẽ đồ thị
+import matplotlib.pyplot as plt
+
 # Kết nối đến cơ sở dữ liệu
 db_connection = dbConnect()
 
@@ -56,20 +62,28 @@ for col in columns_to_clean:
 # Loại bỏ các sản phẩm trùng lặp (nếu có)
 df_products = df_products.drop_duplicates(subset='id')
 
-pd.set_option('display.max_columns', None)
-print(df_products)
+# pd.set_option('display.max_columns', None)
+# print(df_products)
 
 # Gợi ý dựa trên nội dung
 def content_based_recommendations(product_id, num_recommendations=5):
-    tf = TfidfVectorizer(
-        stop_words=None, 
+    
+    stop_words_vi = [
+        'các', 'và', 'là', 'của', 'trong', 
+        'với', 'đến', 'cho', 'nhưng', 'không', 
+        'được', 'một', 'nhiều', 'hơn', 'thế', 
+        'này', 'cái', 'vì', 'hoặc', 'tại'
+    ]   
+    
+    tf_idf_vectorizer = TfidfVectorizer(
+        stop_words=stop_words_vi, 
         max_df=0.8,
         min_df=2,
         ngram_range=(1, 2),
         token_pattern=r'\b\w+\b'
     )
     
-    df_products['content'] = (
+    df_products['features'] = (
         df_products['product_name'] + ' ' + 
         df_products['short_des'] + ' ' +
         df_products['des'] + ' ' + 
@@ -77,12 +91,18 @@ def content_based_recommendations(product_id, num_recommendations=5):
         df_products['sub_category_name'] + ' ' + 
         df_products['brand_name']
     )    
+   
+    tf_idf_matrix = tf_idf_vectorizer.fit_transform(df_products['features'])
     # pd.set_option('display.max_columns', None)
-    # print(df_products['content'].head())
-    
-    tf_matrix = tf.fit_transform(df_products['content'])
     # print(tf_matrix)
-    cosine_sim = cosine_similarity(tf_matrix, tf_matrix)
+    
+    
+    cosine_sim = cosine_similarity(tf_idf_matrix, tf_idf_matrix)
+    
+    # pd.set_option('display.max_rows', cosine_sim.shape[0])
+    
+    # # pd.set_option('display.max_columns', cosine_sim.shape[1])
+    # print(pd.DataFrame(cosine_sim).head(7))
     # print(cosine_sim)
     # cosine_sim = normalize(cosine_sim)
 #    idx = product_id
@@ -103,8 +123,68 @@ def content_based_recommendations(product_id, num_recommendations=5):
     
     return df_products.iloc[product_indices]
 
+
 # print("Content-based Recommendations:")
-# print(content_based_recommendations(30))
+print('Ma trận độ tương đồng:')
+print(content_based_recommendations(30))
+
+
+
+def evaluate_accuracy_by_neighbors(df_products, content_based_recommendations, n_neighbors_list):
+    """
+    Đánh giá độ chính xác của mô hình dựa trên số lượng láng giềng gần nhất.
+    
+    :param df_products: DataFrame chứa thông tin sản phẩm
+    :param content_based_recommendations: Hàm gợi ý dựa trên nội dung
+    :param n_neighbors_list: Danh sách số lượng láng giềng cần đánh giá
+    :return: Dictionary chứa độ chính xác cho mỗi số lượng láng giềng
+    """
+    # Chia dữ liệu thành tập huấn luyện và tập kiểm tra
+    train_df, test_df = train_test_split(df_products, test_size=0.2, random_state=42)
+    
+    accuracy_results = {}
+    
+    for n_neighbors in n_neighbors_list:
+        y_true = []
+        y_pred = []
+        
+        for _, product in test_df.iterrows():
+            true_category = product['category_name']
+            
+            # Lấy gợi ý dựa trên nội dung
+            recommendations = content_based_recommendations(product['id'], num_recommendations=n_neighbors)
+            
+            # Lấy danh mục phổ biến nhất trong các gợi ý
+            predicted_category = recommendations['category_name'].mode().iloc[0]
+            
+            y_true.append(true_category)
+            y_pred.append(predicted_category)
+        
+        # Tính độ chính xác
+        accuracy = accuracy_score(y_true, y_pred)
+        accuracy_results[n_neighbors] = accuracy * 100  # Chuyển đổi thành phần trăm
+    
+    return accuracy_results
+
+# Ví dụ sử dụng
+n_neighbors_list = [5, 10, 20, 30, 40, 50]
+accuracy_results = evaluate_accuracy_by_neighbors(df_products, content_based_recommendations, n_neighbors_list)
+
+# In kết quả
+for n, acc in accuracy_results.items():
+    print(f"Số láng giềng: {n}, Độ chính xác: {acc:.2f}%")
+
+# Vẽ đồ thị (nếu cần)
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 6))
+plt.plot(list(accuracy_results.keys()), list(accuracy_results.values()), marker='o')
+plt.title('Độ chính xác theo số lượng láng giềng gần nhất')
+plt.xlabel('Số lượng láng giềng gần nhất')
+plt.ylabel('Độ chính xác (%)')
+plt.grid(True)
+plt.show()
+
 
 # Endpoint API để lấy gợi ý sản phẩm
 # app = Flask(__name__)
