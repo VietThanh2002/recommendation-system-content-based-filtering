@@ -102,7 +102,7 @@ def content_based_recommendations(product_id,  num_recommendations=5):
     
     # pd.set_option('display.max_rows', cosine_sim.shape[0])
     
-    # # pd.set_option('display.max_columns', cosine_sim.shape[1])
+    # pd.set_option('display.max_columns', cosine_sim.shape[1])
     # print(pd.DataFrame(cosine_sim).head(7))
     # print(cosine_sim)
     # cosine_sim = normalize(cosine_sim)
@@ -121,145 +121,13 @@ def content_based_recommendations(product_id,  num_recommendations=5):
     product_indices = [i[0] for i in sim_scores]
     
     # print(product_indices)
-    
     return df_products.iloc[product_indices]
 
 
 # print("Content-based Recommendations:")
-print('Ma trận độ tương đồng:')
-print(content_based_recommendations(30))
+# print('Ma trận độ tương đồng:')
+# print(content_based_recommendations(30))
 
-
-
-# def evaluate_model_by_neighbors(df_products, content_based_recommendations, n_neighbors_list):
-#     print(df_products)
-#     """
-#     Đánh giá độ chính xác của mô hình dựa trên số lượng láng giềng gần nhất.
-    
-#         :param df_products: DataFrame chứa thông tin sản phẩm
-#         :param content_based_recommendations: Hàm gợi ý dựa trên nội dung
-#         :param n_neighbors_list: Danh sách số lượng láng giềng cần đánh giá
-#         :return: Dictionary chứa độ chính xác cho mỗi số lượng láng giềng
-#     """
-#     # Chia dữ liệu thành tập huấn luyện và tập kiểm tra
-#     train_df, test_df = train_test_split(df_products, test_size=0.2, random_state=42)
-    
-#     accuracy_results = {}
-    
-#     for n_neighbors in n_neighbors_list:
-#         y_true = []
-#         y_pred = []
-        
-#         for _, product in test_df.iterrows():
-#             true_category = product['category_name']
-#             print(product['id'])
-            
-#             # Lấy gợi ý dựa trên nội dung
-#             recommendations = content_based_recommendations(product['id'], num_recommendations=n_neighbors)
-#             print(recommendations)
-            
-#             # Lấy danh mục phổ biến nhất trong các gợi ý
-#             predicted_category = recommendations['category_name'].mode().iloc[0]
-#             print(predicted_category)
-            
-#             y_true.append(true_category)
-#             y_pred.append(predicted_category)
-        
-#         # Tính độ chính xác
-#         accuracy = accuracy_score(y_true, y_pred)
-#         accuracy_results[n_neighbors] = accuracy * 100  # Chuyển đổi thành phần trăm
-    
-#     return accuracy_results
-
-# #sử dụng
-# n_neighbors_list = [5, 10, 20, 30, 40, 50, 60, 70, 80]
-# accuracy_results = evaluate_model_by_neighbors(df_products, content_based_recommendations, n_neighbors_list)
-
-# # In kết quả
-# for n, acc in accuracy_results.items():
-#     print(f"Số láng giềng: {n}, Độ chính xác: {acc:.2f}%")
-
-
-# # Vẽ đồ thị (nếu cần)
-# import matplotlib.pyplot as plt
-
-# plt.figure(figsize=(10, 6))
-# plt.plot(list(accuracy_results.keys()), list(accuracy_results.values()), marker='o')
-# plt.title('Độ chính xác theo số lượng láng giềng gần nhất')
-# plt.xlabel('Số lượng láng giềng gần nhất')
-# plt.ylabel('Độ chính xác (%)')
-# plt.grid(True)
-# plt.show()
-
-# # Đánh giá mô hình
-# Đánh giá mô hình
-
-# def evaluate_model(df_products, n_neighbors_list):
-#     # print(df_products)
-#     train_df, test_df = train_test_split(df_products, test_size=0.25, random_state=42)
-    
-#     results = []
-    
-#     for n_neighbors in n_neighbors_list:
-#         y_true = []
-#         y_pred = []
-        
-#         for _, product in test_df.iterrows():
-#             true_category = product['category_name']
-#             recommendations = content_based_recommendations(product['id'], num_recommendations=n_neighbors)
-#             predicted_category = recommendations['category_name'].mode().iloc[0]
-            
-#             y_true.append(true_category)
-#             y_pred.append(predicted_category)
-        
-#         accuracy = accuracy_score(y_true, y_pred)
-#         precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
-#         recall = recall_score(y_true, y_pred, average='weighted', zero_division=0)
-#         f1 = f1_score(y_true, y_pred, average='weighted', zero_division=0)
-        
-#         results.append({
-#             'n_neighbors': n_neighbors,
-#             'accuracy': accuracy,
-#             'precision': precision,
-#             'recall': recall,
-#             'f1_score': f1
-#         })
-    
-#     return pd.DataFrame(results)
-
-# # Đánh giá mô hình
-# n_neighbors_list = [1, 3, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80]
-# evaluation_results = evaluate_model(df_products, n_neighbors_list)
-
-# # In kết quả
-# print(evaluation_results)
-
-# # Vẽ đồ thị kết quả
-# plt.figure(figsize=(12, 8))
-# for metric in ['accuracy', 'precision', 'recall', 'f1_score']:
-#     plt.plot(evaluation_results['n_neighbors'], evaluation_results[metric], marker='o', label=metric)
-    
-#     # Thêm nhãn cho từng điểm
-#     for i, value in enumerate(evaluation_results[metric]):
-#         plt.text(evaluation_results['n_neighbors'].iloc[i], value, f'{value:.2f}', fontsize=9, ha='center', va='bottom')
-
-# plt.title('Model Performance Metrics')
-# plt.xlabel('Số Láng Giềng Gần Nhất')
-# plt.ylabel('Điểm Số')
-# plt.legend()
-# plt.grid(True)
-# plt.show()
-
-# # Phân tích phân bố danh mục
-# category_distribution = df_products['category_name'].value_counts(normalize=True)
-# plt.figure(figsize=(12, 6))
-# category_distribution.plot(kind='bar')
-# plt.title('Phân Bố Danh Mục')
-# plt.xlabel('Danh Mục')
-# plt.ylabel('Tỷ Lệ')
-# plt.xticks(rotation=45, ha='right')
-# plt.tight_layout()
-# plt.show()
 def evaluate_model_by_neighbors(df_products, content_based_recommendations, n_neighbors_list):
     """
     Đánh giá các chỉ số độ chính xác của mô hình dựa trên số lượng láng giềng gần nhất.
@@ -270,7 +138,9 @@ def evaluate_model_by_neighbors(df_products, content_based_recommendations, n_ne
         :return: DataFrame chứa độ chính xác, Precision, Recall, và F1-score cho mỗi số lượng láng giềng
     """
     # Chia dữ liệu thành tập huấn luyện và tập kiểm tra
-    train_df, test_df = train_test_split(df_products, test_size=0.2, random_state=42)
+    train_df, test_df = train_test_split(df_products, test_size=0.2, random_state=42, shuffle=True)
+    # print(train_df)
+    # print(test_df)
     
     results = []
 
@@ -280,12 +150,14 @@ def evaluate_model_by_neighbors(df_products, content_based_recommendations, n_ne
         
         for _, product in test_df.iterrows():
             true_category = product['category_name']
-            
+            print(product['id'])
+        
             # Lấy gợi ý dựa trên nội dung
             recommendations = content_based_recommendations(product['id'], num_recommendations=n_neighbors)
             
             # Lấy danh mục phổ biến nhất trong các gợi ý
             predicted_category = recommendations['category_name'].mode().iloc[0]
+            print(predicted_category)
             
             y_true.append(true_category)
             y_pred.append(predicted_category)
@@ -310,41 +182,54 @@ def evaluate_model_by_neighbors(df_products, content_based_recommendations, n_ne
     
     return pd.DataFrame(results)
 
-# Sử dụng
-n_neighbors_list = [5, 10, 20, 30, 40, 50, 60]
-evaluation_results = evaluate_model_by_neighbors(df_products, content_based_recommendations, n_neighbors_list)
+# # Sử dụng
+# n_neighbors_list = [5, 10, 20, 30, 40, 50, 60]
+# evaluation_results = evaluate_model_by_neighbors(df_products, content_based_recommendations, n_neighbors_list)
 
-# In kết quả
-print(evaluation_results)
-# Đảm bảo các giá trị cột accuracy đã tồn tại
-if 'accuracy' not in evaluation_results.columns:
-    print("Cột 'accuracy' không tồn tại trong dữ liệu kết quả.")
-else:
-    print("Cột 'accuracy' đã có trong kết quả.")
-# Vẽ đồ thị các chỉ số
+# # In kết quả
+# print(evaluation_results)
+# # Đảm bảo các giá trị cột accuracy đã tồn tại
+# if 'accuracy' not in evaluation_results.columns:
+#     print("Cột 'accuracy' không tồn tại trong dữ liệu kết quả.")
+# else:
+#     print("Cột 'accuracy' đã có trong kết quả.")
+# # Vẽ đồ thị các chỉ số
 
-# Dùng vòng lặp để vẽ các chỉ số
-plt.figure(figsize=(12, 8))
-metrics = ['accuracy', 'precision', 'recall', 'f1_score']
-colors = ['b', 'r', 'g', 'c']
-markers = ['o', 's', '^', 'D']
-linestyles = ['-', '--', '-.', ':']
+# # Dùng vòng lặp để vẽ các chỉ số
+# plt.figure(figsize=(12, 8))
+# metrics = ['accuracy', 'precision', 'recall', 'f1_score']
+# colors = ['b', 'r', 'g', 'c']
+# markers = ['o', 's', '^', 'D']
+# linestyles = ['-', '--', '-.', ':']
 
-for i, metric in enumerate(metrics):
-    plt.plot(evaluation_results['n_neighbors'], evaluation_results[metric], 
-             color=colors[i], marker=markers[i], linestyle=linestyles[i],
-             label=metric, linewidth=2, markersize=8, alpha=0.7)
+# for i, metric in enumerate(metrics):
+#     plt.plot(evaluation_results['n_neighbors'], evaluation_results[metric], 
+#              color=colors[i], marker=markers[i], linestyle=linestyles[i],
+#              label=metric, linewidth=2, markersize=8, alpha=0.7)
     
-     # Hiển thị giá trị các chỉ số ngay tại mỗi điểm
-    for i, value in enumerate(evaluation_results[metric]):
-        plt.text(evaluation_results['n_neighbors'][i], value, f'{value:.2f}', fontsize=9, ha='right')
+#      # Hiển thị giá trị các chỉ số ngay tại mỗi điểm
+#     for i, value in enumerate(evaluation_results[metric]):
+#         plt.text(evaluation_results['n_neighbors'][i], value, f'{value:.2f}', fontsize=9, ha='right')
 
-plt.title('Model Performance Metrics')
-plt.xlabel('Số Láng Giềng Gần Nhất')
-plt.ylabel('Điểm Số (%)')
-plt.legend()
-plt.grid(True)
-plt.show()
+# plt.title('Model Performance Metrics')
+# plt.xlabel('Số Láng Giềng Gần Nhất')
+# plt.ylabel('Điểm Số (%)')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+
+
+# # Phân tích phân bố danh mục
+# category_distribution = df_products['category_name'].value_counts(normalize=True)
+# plt.figure(figsize=(12, 6))
+# category_distribution.plot(kind='bar')
+# plt.title('Phân Bố Danh Mục')
+# plt.xlabel('Danh Mục')
+# plt.ylabel('Tỷ Lệ')
+# plt.xticks(rotation=45, ha='right')
+# plt.tight_layout()
+# plt.show()
+
 # Endpoint API để lấy gợi ý sản phẩm
 # app = Flask(__name__)
 
