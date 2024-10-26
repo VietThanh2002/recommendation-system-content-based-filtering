@@ -128,59 +128,73 @@ def content_based_recommendations(product_id,  num_recommendations=5):
 # print('Ma trận độ tương đồng:')
 # print(content_based_recommendations(30))
 
-def evaluate_model_by_neighbors(df_products, content_based_recommendations, n_neighbors_list):
-    """
-    Đánh giá các chỉ số độ chính xác của mô hình dựa trên số lượng láng giềng gần nhất.
-    
-        :param df_products: DataFrame chứa thông tin sản phẩm
-        :param content_based_recommendations: Hàm gợi ý dựa trên nội dung
-        :param n_neighbors_list: Danh sách số lượng láng giềng cần đánh giá
-        :return: DataFrame chứa độ chính xác, Precision, Recall, và F1-score cho mỗi số lượng láng giềng
-    """
-    # Chia dữ liệu thành tập huấn luyện và tập kiểm tra
-    train_df, test_df = train_test_split(df_products, test_size=0.2, random_state=42, shuffle=True)
-    # print(train_df)
-    # print(test_df)
-    
-    results = []
+# Endpoint API để lấy gợi ý sản phẩm
+app = Flask(__name__)
 
-    for n_neighbors in n_neighbors_list:
-        y_true = []
-        y_pred = []
-        
-        for _, product in test_df.iterrows():
-            true_category = product['category_name']
-            print(product['id'])
-        
-            # Lấy gợi ý dựa trên nội dung
-            recommendations = content_based_recommendations(product['id'], num_recommendations=n_neighbors)
-            
-            # Lấy danh mục phổ biến nhất trong các gợi ý
-            predicted_category = recommendations['category_name'].mode().iloc[0]
-            print(predicted_category)
-            
-            y_true.append(true_category)
-            y_pred.append(predicted_category)
-            
-            # print('Confusion Matrix:')
-            # print(pd.crosstab(pd.Series(y_true), pd.Series(y_pred), rownames=['True'], colnames=['Predicted'], margins=True))
-        # Tính toán các chỉ số
-        
-        accuracy = accuracy_score(y_true, y_pred)
-        precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
-        recall = recall_score(y_true, y_pred, average='weighted', zero_division=0)
-        f1 = f1_score(y_true, y_pred, average='weighted', zero_division=0)
-        
-        # Lưu kết quả cho mỗi số lượng láng giềng
-        results.append({
-            'n_neighbors': n_neighbors,
-            'accuracy': accuracy * 100,  # Chuyển thành phần trăm
-            'precision': precision * 100,
-            'recall': recall * 100,
-            'f1_score': f1 * 100
-        })
+@app.route('/recommendations', methods=['GET'])
+def recommendations():
+    product_id = int(request.args.get('product_id'))
+    recommended_products = content_based_recommendations(product_id)
+    recommended_product_ids = recommended_products['id'].tolist()
+    data = {'recommended_product_ids': recommended_product_ids}
+    return jsonify(data)
+
+if __name__ == '__main__':
+    app.run(port=9090)
+
+# def evaluate_model_by_neighbors(df_products, content_based_recommendations, n_neighbors_list):
+#     """
+#     Đánh giá các chỉ số độ chính xác của mô hình dựa trên số lượng láng giềng gần nhất.
     
-    return pd.DataFrame(results)
+#         :param df_products: DataFrame chứa thông tin sản phẩm
+#         :param content_based_recommendations: Hàm gợi ý dựa trên nội dung
+#         :param n_neighbors_list: Danh sách số lượng láng giềng cần đánh giá
+#         :return: DataFrame chứa độ chính xác, Precision, Recall, và F1-score cho mỗi số lượng láng giềng
+#     """
+#     # Chia dữ liệu thành tập huấn luyện và tập kiểm tra
+#     train_df, test_df = train_test_split(df_products, test_size=0.2, random_state=42, shuffle=True)
+#     # print(train_df)
+#     # print(test_df)
+    
+#     results = []
+
+#     for n_neighbors in n_neighbors_list:
+#         y_true = []
+#         y_pred = []
+        
+#         for _, product in test_df.iterrows():
+#             true_category = product['category_name']
+#             print(product['id'])
+        
+#             # Lấy gợi ý dựa trên nội dung
+#             recommendations = content_based_recommendations(product['id'], num_recommendations=n_neighbors)
+            
+#             # Lấy danh mục phổ biến nhất trong các gợi ý
+#             predicted_category = recommendations['category_name'].mode().iloc[0]
+#             print(predicted_category)
+            
+#             y_true.append(true_category)
+#             y_pred.append(predicted_category)
+            
+#             # print('Confusion Matrix:')
+#             # print(pd.crosstab(pd.Series(y_true), pd.Series(y_pred), rownames=['True'], colnames=['Predicted'], margins=True))
+#         # Tính toán các chỉ số
+        
+#         accuracy = accuracy_score(y_true, y_pred)
+#         precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
+#         recall = recall_score(y_true, y_pred, average='weighted', zero_division=0)
+#         f1 = f1_score(y_true, y_pred, average='weighted', zero_division=0)
+        
+#         # Lưu kết quả cho mỗi số lượng láng giềng
+#         results.append({
+#             'n_neighbors': n_neighbors,
+#             'accuracy': accuracy * 100,  # Chuyển thành phần trăm
+#             'precision': precision * 100,
+#             'recall': recall * 100,
+#             'f1_score': f1 * 100
+#         })
+    
+#     return pd.DataFrame(results)
 
 # # Sử dụng
 # n_neighbors_list = [5, 10, 20, 30, 40, 50, 60]
