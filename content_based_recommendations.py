@@ -54,7 +54,6 @@ def clean_text(raw_html):
 # Xử lý các giá trị null hoặc NaN
 df_products = df_products.fillna('')
 
-# Áp dụng hàm làm sạch cho các cột cần thiết
 columns_to_clean = ['product_name', 'des', 'short_des', 'category_name', 'sub_category_name', 'brand_name']
 
 for col in columns_to_clean:
@@ -63,11 +62,13 @@ for col in columns_to_clean:
 # Loại bỏ các sản phẩm trùng lặp (nếu có)
 df_products = df_products.drop_duplicates(subset='id')
 
+# In ra cột thứ 7 (sub_category_name)
+# print(df_products.iloc[:, 1])
 # pd.set_option('display.max_columns', None)
 # print(df_products)
 
 # Gợi ý dựa trên nội dung
-def content_based_recommendations(product_id,  num_recommendations=5):
+def content_based_recommendations(product_id,  num_recommendations=4):
     
     stop_words_vi = [
         'các', 'và', 'là', 'của', 'trong', 
@@ -81,7 +82,7 @@ def content_based_recommendations(product_id,  num_recommendations=5):
         max_df=0.8,
         min_df=2,
         ngram_range=(1, 2),
-        token_pattern=r'\b\w+\b'
+        token_pattern=r'\b\w+\b',
     )
     
     df_products['features'] = (
@@ -92,14 +93,15 @@ def content_based_recommendations(product_id,  num_recommendations=5):
         df_products['sub_category_name'] + ' ' + 
         df_products['brand_name']
     )    
+    # print(df_products['features'])
    
     tf_idf_matrix = tf_idf_vectorizer.fit_transform(df_products['features'])
     # pd.set_option('display.max_columns', None)
-    # print(tf_matrix)
+    # pd.set_option('display.max_rows', None)
+    # print(tf_idf_matrix)
     
     
     cosine_sim = cosine_similarity(tf_idf_matrix, tf_idf_matrix)
-    
     # pd.set_option('display.max_rows', cosine_sim.shape[0])
     
     # pd.set_option('display.max_columns', cosine_sim.shape[1])
@@ -110,25 +112,30 @@ def content_based_recommendations(product_id,  num_recommendations=5):
 #     print(idx)
 #     sim_scores = list(enumerate(cosine_sim[product_id]))
     idx = df_products[df_products['id'] == product_id].index[0]
-    # print(idx)
-    # print(df_products[df_products['id'] == 30])
+    print(idx)
+    print(df_products[df_products['id'] == 30])
     
     sim_scores = list(enumerate(cosine_sim[idx]))
+    # print(sim_scores)
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     # print(sim_scores)
     sim_scores = sim_scores[1:num_recommendations+1]
     
     product_indices = [i[0] for i in sim_scores]
     
+    print(product_indices)
+    recommended_product_ids = df_products.iloc[product_indices]['id'].tolist()
+    print(recommended_product_ids) 
+     
+    
     # print(product_indices)
     return df_products.iloc[product_indices]
 
 
 # print("Content-based Recommendations:")
-# print('Ma trận độ tương đồng:')
-# print(content_based_recommendations(30))
+print('Ma trận độ tương đồng:')
+print(content_based_recommendations(30))
 
-# Endpoint API để lấy gợi ý sản phẩm
 app = Flask(__name__)
 
 @app.route('/recommendations', methods=['GET'])

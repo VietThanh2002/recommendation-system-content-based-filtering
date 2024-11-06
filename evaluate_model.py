@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 def evaluate_model(df_products, content_based_recommendations, n_neighbors_list):
     # pd.set_option('display.max_columns', df_products.shape[1])
-    # print(df_products)
+    print(df_products)
     results = []
 
     # Chia dữ liệu thành tập huấn luyện và tập kiểm tra
@@ -22,30 +22,30 @@ def evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
 
         # Duyệt qua từng sản phẩm trong tập kiểm tra
         for _, product in test_df.iterrows():
+        
             true_category = product['category_name']
-            print('True category:', true_category)
-            print(true_category)
+            # print('n_neighbors:', n_neighbors)
+            # print('True category:', true_category)
+            # print(true_category)
             
             # Lấy gợi ý dựa trên nội dung
-            product_id = product['id'] 
-            product_name = product['product_name']
-            print('Product ID:', product_id)
-            print('Product Name:', product_name)
+            # product_id = product['id'] 
+            # product_name = product['product_name']
+            # print('Product ID:', product_id)
+            # print('Product Name:', product_name)
             recommendations = content_based_recommendations(product['id'], num_recommendations=n_neighbors)
-            print('Recommendations:', recommendations)
+            # print('Recommendations:', recommendations)
             
             # Lấy danh mục phổ biến nhất trong các gợi ý
             predicted_category = recommendations['category_name'].mode().iloc[0]
-            print('Predicted category:', predicted_category)
-            print(predicted_category)
+            # print('Predicted category:', predicted_category)
+            # print(predicted_category)
             
             y_true.append(true_category)
-            # print('y_true:', y_true)
+            print('y_true:', y_true)
             y_pred.append(predicted_category)
-            # print('y_pred:', y_pred)
+            print('y_pred:', y_pred)
             
-
-        # Tính toán các chỉ số
         accuracy = accuracy_score(y_true, y_pred)
         precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
         recall = recall_score(y_true, y_pred, average='weighted', zero_division=0)
