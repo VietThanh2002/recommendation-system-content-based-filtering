@@ -8,13 +8,16 @@ import matplotlib.pyplot as plt
 
 def evaluate_model(df_products, content_based_recommendations, n_neighbors_list):
     # pd.set_option('display.max_columns', df_products.shape[1])
-    print(df_products)
+    # print(df_products)
     results = []
 
     # Chia dữ liệu thành tập huấn luyện và tập kiểm tra
     train_df, test_df = train_test_split(df_products, test_size=0.2, random_state=42, shuffle=True)
+    
     print('Train data:', train_df)
+    print('------------------------------------')
     print('Test data:', test_df)
+    print('------------------------------------')
     
     for n_neighbors in n_neighbors_list:
         y_true = []
@@ -42,9 +45,9 @@ def evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
             # print(predicted_category)
             
             y_true.append(true_category)
-            print('y_true:', y_true)
+            # print('y_true:', y_true)
             y_pred.append(predicted_category)
-            print('y_pred:', y_pred)
+            # print('y_pred:', y_pred)
             
         accuracy = accuracy_score(y_true, y_pred)
         precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
@@ -88,21 +91,21 @@ def evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
     return results_df
 
 # Sử dụng hàm
-# n_neighbors_list = [5, 10, 20, 25, 30, 35, 40, 45, 50]
-n_neighbors_list = [5]
+n_neighbors_list = [5, 10, 15, 20, 25]
+# n_neighbors_list = [5]
 evaluation_results = evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
 
 # In kết quả
 print(evaluation_results)
 
 
-# # Phân tích phân bố danh mục
-# category_distribution = df_products['category_name'].value_counts(normalize=True)
-# plt.figure(figsize=(12, 6))
-# category_distribution.plot(kind='bar')
-# plt.title('Phân Bố Danh Mục')
-# plt.xlabel('Danh Mục')
-# plt.ylabel('Tỷ Lệ')
-# plt.xticks(rotation=45, ha='right')
-# plt.tight_layout()
-# plt.show()
+# Phân tích phân bố danh mục
+category_distribution = df_products['category_name'].value_counts(normalize=True)
+plt.figure(figsize=(12, 6))
+category_distribution.plot(kind='bar')
+plt.title('Phân Bố Danh Mục')
+plt.xlabel('Danh Mục')
+plt.ylabel('Tỷ Lệ')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()

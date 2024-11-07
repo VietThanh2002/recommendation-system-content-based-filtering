@@ -112,8 +112,8 @@ def content_based_recommendations(product_id,  num_recommendations=4):
 #     print(idx)
 #     sim_scores = list(enumerate(cosine_sim[product_id]))
     idx = df_products[df_products['id'] == product_id].index[0]
-    print(idx)
-    print(df_products[df_products['id'] == 30])
+    # print(idx)
+    # print(df_products[df_products['id'] == 30])
     
     sim_scores = list(enumerate(cosine_sim[idx]))
     # print(sim_scores)
@@ -123,9 +123,9 @@ def content_based_recommendations(product_id,  num_recommendations=4):
     
     product_indices = [i[0] for i in sim_scores]
     
-    print(product_indices)
+    # print(product_indices)
     recommended_product_ids = df_products.iloc[product_indices]['id'].tolist()
-    print(recommended_product_ids) 
+    # print(recommended_product_ids) 
      
     
     # print(product_indices)
@@ -133,8 +133,8 @@ def content_based_recommendations(product_id,  num_recommendations=4):
 
 
 # print("Content-based Recommendations:")
-print('Ma trận độ tương đồng:')
-print(content_based_recommendations(30))
+# print('Ma trận độ tương đồng:')
+# print(content_based_recommendations(30))
 
 app = Flask(__name__)
 

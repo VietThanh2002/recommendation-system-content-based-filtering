@@ -56,9 +56,9 @@ content_product['content'] = (content_product['product_name'] + ' ' + content_pr
 # pd.set_option('display.max_rows', None)
 
 # pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-print("Content Product:")
-print(content_product)
+# pd.set_option('display.max_columns', None)
+# print("Content Product:")
+# print(content_product)
 # for key, value in content_product.items():
 #     print(f"{key}: {value}")
 # print("------------------------")
