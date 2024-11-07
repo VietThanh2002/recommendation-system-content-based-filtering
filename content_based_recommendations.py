@@ -127,7 +127,6 @@ def content_based_recommendations(product_id,  num_recommendations=4):
     recommended_product_ids = df_products.iloc[product_indices]['id'].tolist()
     # print(recommended_product_ids) 
      
-    
     # print(product_indices)
     return df_products.iloc[product_indices]
 

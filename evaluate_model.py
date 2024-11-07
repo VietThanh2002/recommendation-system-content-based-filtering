@@ -81,7 +81,7 @@ def evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
         for j, value in enumerate(results_df[metric]):
             plt.text(results_df['n_neighbors'][j], value, f'{value:.2f}', fontsize=9, ha='right')
 
-    plt.title('Model Performance Metrics')
+    plt.title('Hiệu suất của mô hình')
     plt.xlabel('Số Láng Giềng Gần Nhất')
     plt.ylabel('Điểm Số (%)')
     plt.legend()
@@ -91,7 +91,7 @@ def evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
     return results_df
 
 # Sử dụng hàm
-n_neighbors_list = [5, 10, 15, 20, 25]
+n_neighbors_list = [5, 10, 15, 20, 25, 30, 35, 40, 45] 
 # n_neighbors_list = [5]
 evaluation_results = evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
 
