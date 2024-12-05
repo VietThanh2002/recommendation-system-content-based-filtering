@@ -44,10 +44,11 @@ def evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
             # print('Predicted category:', predicted_category)
             # print(predicted_category)
             
+            print(product['id'], 'True:', true_category, 'Predicted:', predicted_category)
             y_true.append(true_category)
-            # print('y_true:', y_true)
+            print('y_true:', y_true)
             y_pred.append(predicted_category)
-            # print('y_pred:', y_pred)
+            print('y_pred:', y_pred)
             
         accuracy = accuracy_score(y_true, y_pred)
         precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
@@ -91,7 +92,7 @@ def evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
     return results_df
 
 # Sử dụng hàm
-n_neighbors_list = [5, 10, 15, 20, 25, 30, 35, 40, 45] 
+n_neighbors_list = [5, 10, 15, 20, 25, 30, 35] 
 # n_neighbors_list = [5]
 evaluation_results = evaluate_model(df_products, content_based_recommendations, n_neighbors_list)
 

@@ -68,7 +68,7 @@ df_products = df_products.drop_duplicates(subset='id')
 # print(df_products)
 
 # Gợi ý dựa trên nội dung
-def content_based_recommendations(product_id,  num_recommendations=4):
+def content_based_recommendations(product_id,  num_recommendations=5):
     
     stop_words_vi = [
         'các', 'và', 'là', 'của', 'trong', 
@@ -105,7 +105,7 @@ def content_based_recommendations(product_id,  num_recommendations=4):
     # pd.set_option('display.max_rows', cosine_sim.shape[0])
     
     # pd.set_option('display.max_columns', cosine_sim.shape[1])
-    # print(pd.DataFrame(cosine_sim).head(7))
+    # print(pd.DataFrame(cosine_sim).head(15))
     # print(cosine_sim)
     # cosine_sim = normalize(cosine_sim)
 #    idx = product_id
@@ -124,16 +124,16 @@ def content_based_recommendations(product_id,  num_recommendations=4):
     product_indices = [i[0] for i in sim_scores]
     
     # print(product_indices)
-    recommended_product_ids = df_products.iloc[product_indices]['id'].tolist()
+    # recommended_product_ids = df_products.iloc[product_indices]['id'].tolist()
     # print(recommended_product_ids) 
      
     # print(product_indices)
     return df_products.iloc[product_indices]
 
 
-# print("Content-based Recommendations:")
-# print('Ma trận độ tương đồng:')
-# print(content_based_recommendations(30))
+print("Content-based Recommendations:")
+print('Ma trận độ tương đồng:')
+print(content_based_recommendations(30))
 
 app = Flask(__name__)
 
